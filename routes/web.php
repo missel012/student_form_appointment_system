@@ -9,6 +9,11 @@ $router->get('/', function () use ($router) {
     return $router->app->version();
 });
 
+$router->get('/test', function () {
+    return 'Routes are loaded!';
+});
+
+
 
 $router->get('/form-requests', ['as' => 'form-requests.index', 'uses' => 'FormRequestController@index']);
 $router->post('/form-requests', ['as' => 'form-requests.store', 'uses' => 'FormRequestController@store']);
@@ -17,10 +22,14 @@ $router->put('/form-requests/{id}', ['as' => 'form-requests.update', 'uses' => '
 $router->patch('/form-requests/{id}', ['as' => 'form-requests.update.partial', 'uses' => 'FormRequestController@update']);
 $router->delete('/form-requests/{id}', ['as' => 'form-requests.destroy', 'uses' => 'FormRequestController@destroy']);
 
-// Define routes using $router
+//booking
 $router->get('/redirect', 'GoogleCalendarController@redirectToGoogle');
 $router->get('/oauth2callback', 'GoogleCalendarController@handleGoogleCallback');
 $router->get('/api/calendar/events', 'GoogleCalendarController@fetchEvents');
+$router->post('/book-appointment', ['as' => 'book-appointment', 'uses' => 'GoogleCalendarController@bookAppointment']);
+$router->get('/show-appointment', ['as' => 'show-appointment', 'uses' => 'GoogleCalendarController@showAppointmentForm']);
+
+
 
 // Payment Routes
 $router->post('/payments', 'PaymentController@create');

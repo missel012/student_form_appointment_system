@@ -75,6 +75,8 @@ $app->middleware([
 |
 */
 $app->configure('app');
+$app->configure('view');
+
 
 /*
 |--------------------------------------------------------------------------
@@ -86,10 +88,9 @@ $app->configure('app');
 | route or middleware that'll be assigned to some specific routes.
 |
 */
-
-// $app->middleware([
-//     App\Http\Middleware\ExampleMiddleware::class
-// ]);
+$app->middleware([
+    Illuminate\Session\Middleware\StartSession::class,
+]);
 
 // $app->routeMiddleware([
 //     'auth' => App\Http\Middleware\Authenticate::class,
@@ -109,7 +110,11 @@ $app->configure('app');
 $app->register(App\Providers\GoogleCalendarServiceProvider::class);
 
 
-// $app->register(App\Providers\AppServiceProvider::class);
+ $app->register(App\Providers\AppServiceProvider::class);
+ $app->register(Illuminate\View\ViewServiceProvider::class);
+ $app->register(\Collective\Html\HtmlServiceProvider::class);
+
+
 // $app->register(App\Providers\AuthServiceProvider::class);
 // $app->register(App\Providers\EventServiceProvider::class);
 
@@ -123,6 +128,9 @@ $app->register(App\Providers\GoogleCalendarServiceProvider::class);
 | can respond to, as well as the controllers that may handle them.
 |
 */
+
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
 
 $app->router->group([
