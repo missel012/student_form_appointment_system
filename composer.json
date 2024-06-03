@@ -9,7 +9,8 @@
         "google/apiclient": "^2.16",
         "illuminate/session": "^10.48",
         "laravel/lumen-framework": "^10.0",
-        "paymongo/paymongo-php": "^0.0.0"
+        "paymongo/paymongo-php": "^0.0.0",
+        "sendgrid/sendgrid": "*"
     },
     "require-dev": {
         "fakerphp/faker": "^1.9.1",

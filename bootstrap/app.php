@@ -60,6 +60,12 @@ $app->singleton('App\PaymongoAPI', function ($app) {
 });
 
 
+$app->singleton(App\Services\MailService::class, function ($app) {
+    return new App\Services\MailService(new SendGrid(env('SENDGRID_API_KEY')));
+});
+
+
+
 $app->middleware([
     StartSession::class,
 ]);
@@ -109,6 +115,7 @@ $app->middleware([
 
 $app->register(App\Providers\GoogleCalendarServiceProvider::class);
 
+$app->register(App\Providers\SendGridServiceProvider::class);
 
  $app->register(App\Providers\AppServiceProvider::class);
  $app->register(Illuminate\View\ViewServiceProvider::class);
@@ -128,6 +135,9 @@ $app->register(App\Providers\GoogleCalendarServiceProvider::class);
 | can respond to, as well as the controllers that may handle them.
 |
 */
+
+class_alias(Collective\Html\FormFacade::class, 'Form');
+class_alias(Collective\Html\HtmlFacade::class, 'Html');
 
 error_reporting(E_ALL);
 ini_set('display_errors', 1);

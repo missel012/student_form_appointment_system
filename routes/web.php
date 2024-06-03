@@ -23,11 +23,19 @@ $router->patch('/form-requests/{id}', ['as' => 'form-requests.update.partial', '
 $router->delete('/form-requests/{id}', ['as' => 'form-requests.destroy', 'uses' => 'FormRequestController@destroy']);
 
 //booking
-$router->get('/redirect', 'GoogleCalendarController@redirectToGoogle');
-$router->get('/oauth2callback', 'GoogleCalendarController@handleGoogleCallback');
-$router->get('/api/calendar/events', 'GoogleCalendarController@fetchEvents');
-$router->post('/book-appointment', ['as' => 'book-appointment', 'uses' => 'GoogleCalendarController@bookAppointment']);
-$router->get('/show-appointment', ['as' => 'show-appointment', 'uses' => 'GoogleCalendarController@showAppointmentForm']);
+//$router->get('/redirect', 'GoogleCalendarController@redirectToGoogle');
+//$router->get('/oauth2callback', 'GoogleCalendarController@handleGoogleCallback');
+//$router->get('/api/calendar/events', 'GoogleCalendarController@fetchEvents');
+//$router->post('/book-appointment', ['as' => 'book-appointment', 'uses' => 'GoogleCalendarController@bookAppointment']);
+//$router->get('/show-appointment', ['as' => 'show-appointment', 'uses' => 'GoogleCalendarController@showAppointmentForm']);
+
+// routes/web.php
+
+$router->get('/auth', 'GoogleCalendarController@redirectToGoogle');
+$router->post('/oauth2callback', 'GoogleCalendarController@handleOAuthCallback');
+$router->post('/events/create', 'GoogleCalendarController@createEvent');
+
+
 
 
 
@@ -41,3 +49,6 @@ $router->delete('/payments/{paymentId}', 'PaymentController@delete');
 // Routes for testing Paymongo API
 $router->post('/payments', 'PaymentController@create');
 $router->get('/paymongo/payment-intent', 'PaymentController@createPaymentIntent');
+
+//sendgrid
+$router->post('/send-email', 'MailController@sendTestEmail');

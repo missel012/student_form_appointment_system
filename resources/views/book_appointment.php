@@ -36,7 +36,8 @@
 </head>
 <body>
     <h1>Book Appointment</h1>
-    <form id="appointment-form" action="{{ route('book-appointment') }}" method="POST">
+    <form id="appointment-form" action="/book-appointment" method="POST">
+        <!-- CSRF token input field removed -->
         <label for="appointment_for">Appointment For:</label><br>
         <input type="text" id="appointment_for" name="appointment_for" required><br><br>
         
@@ -49,17 +50,30 @@
     <div id="message-container"></div>
 
     <?php
-    // Check if form is submitted
-    if ($_SERVER["REQUEST_METHOD"] == "POST") {
-        // Fetch response message from PHP
-        $response = json_decode(file_get_contents('php://input'), true);
+    // Display response message
+    if (isset($_SESSION['message'])) {
+        echo "<script>showMessage('" . $_SESSION['message'] . "');</script>";
+        unset($_SESSION['message']);
+    }
 
-        // Display response message
-        if (isset($response['error'])) {
-            echo "<script>showMessage('" . $response['error'] . "', true);</script>";
-        } elseif (isset($response['message'])) {
-            echo "<script>showMessage('" . $response['message'] . "');</script>";
+    if (isset($_SESSION['error'])) {
+        echo "<script>showMessage('" . $_SESSION['error'] . "', true);</script>";
+        unset($_SESSION['error']);
+    }
+
+    if (isset($events) && count($events) > 0) {
+        echo '<h2>Upcoming Events</h2>';
+        echo '<ul>';
+        foreach ($events as $event) {
+            echo '<li>';
+            echo '<strong>' . htmlspecialchars($event->getSummary()) . '</strong><br>';
+            echo 'Start: ' . htmlspecialchars($event->getStart()->getDateTime()) . '<br>';
+            echo 'End: ' . htmlspecialchars($event->getEnd()->getDateTime()) . '<br>';
+            echo '</li>';
         }
+        echo '</ul>';
+    } else {
+        echo '<p>No events found or credentials missing.</p>';
     }
     ?>
 </body>
