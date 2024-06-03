@@ -14,7 +14,7 @@ $router->get('/test', function () {
 });
 
 
-
+//form-request
 $router->get('/form-requests', ['as' => 'form-requests.index', 'uses' => 'FormRequestController@index']);
 $router->post('/form-requests', ['as' => 'form-requests.store', 'uses' => 'FormRequestController@store']);
 $router->get('/form-requests/{id}', ['as' => 'form-requests.show', 'uses' => 'FormRequestController@show']);
@@ -23,20 +23,13 @@ $router->patch('/form-requests/{id}', ['as' => 'form-requests.update.partial', '
 $router->delete('/form-requests/{id}', ['as' => 'form-requests.destroy', 'uses' => 'FormRequestController@destroy']);
 
 //booking
-//$router->get('/redirect', 'GoogleCalendarController@redirectToGoogle');
-//$router->get('/oauth2callback', 'GoogleCalendarController@handleGoogleCallback');
-//$router->get('/api/calendar/events', 'GoogleCalendarController@fetchEvents');
-//$router->post('/book-appointment', ['as' => 'book-appointment', 'uses' => 'GoogleCalendarController@bookAppointment']);
-//$router->get('/show-appointment', ['as' => 'show-appointment', 'uses' => 'GoogleCalendarController@showAppointmentForm']);
-
-// routes/web.php
-
 $router->get('/auth', 'GoogleCalendarController@redirectToGoogle');
 $router->post('/oauth2callback', 'GoogleCalendarController@handleOAuthCallback');
-$router->post('/events/create', 'GoogleCalendarController@createEvent');
-
-
-
+$router->get('/events/{id}', ['uses' => 'GoogleCalendarController@viewEvent']);
+$router->post('/events', ['uses' => 'GoogleCalendarController@createEvent']);
+$router->put('/events/{id}', ['uses' => 'GoogleCalendarController@updateEvent']);
+$router->patch('/events/{id}', ['uses' => 'GoogleCalendarController@updateEvent']);
+$router->delete('/events/{id}', ['uses' => 'GoogleCalendarController@deleteEvent']);
 
 
 // Payment Routes

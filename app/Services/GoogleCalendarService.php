@@ -63,4 +63,18 @@ class GoogleCalendarService
 
         return json_decode($response->getBody(), true);
     }
+
+    public function deleteEvent($accessToken, $calendarId, $eventId)
+    {
+        $url = "https://www.googleapis.com/calendar/v3/calendars/{$calendarId}/events/{$eventId}";
+
+        $response = $this->client->delete($url, [
+            'headers' => [
+                'Authorization' => 'Bearer ' . $accessToken,
+                'Content-Type' => 'application/json',
+            ],
+        ]);
+
+        return $response->getStatusCode() === 204;
+    }
 }
