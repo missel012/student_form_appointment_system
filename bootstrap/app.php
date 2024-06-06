@@ -81,7 +81,7 @@ $app->middleware([
 |
 */
 $app->configure('app');
-$app->configure('view');
+//$app->configure('view');
 
 
 /*
@@ -98,9 +98,10 @@ $app->middleware([
     Illuminate\Session\Middleware\StartSession::class,
 ]);
 
-// $app->routeMiddleware([
-//     'auth' => App\Http\Middleware\Authenticate::class,
-// ]);
+$app->routeMiddleware([
+    'auth' => App\Http\Middleware\Authenticate::class,
+    'client.credentials' => Tymon\JWTAuth\Providers\LumenServiceProvider::class,
+]);
 
 /*
 |--------------------------------------------------------------------------
@@ -118,11 +119,11 @@ $app->register(App\Providers\GoogleCalendarServiceProvider::class);
 $app->register(App\Providers\SendGridServiceProvider::class);
 
  $app->register(App\Providers\AppServiceProvider::class);
- $app->register(Illuminate\View\ViewServiceProvider::class);
+ //$app->register(Illuminate\View\ViewServiceProvider::class);
  $app->register(\Collective\Html\HtmlServiceProvider::class);
+ $app->register(Tymon\JWTAuth\Providers\LumenServiceProvider::class);
 
-
-// $app->register(App\Providers\AuthServiceProvider::class);
+ //$app->register(App\Providers\AuthServiceProvider::class);
 // $app->register(App\Providers\EventServiceProvider::class);
 
 /*
