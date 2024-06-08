@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use App\Models\ScheduledEmail;
 use App\Services\MailService;
+use Carbon\Carbon;
 
 class MailController extends Controller
 {
@@ -21,7 +23,7 @@ class MailController extends Controller
         $validator = Validator::make($request->all(), [
             'to' => 'required|email',
             'to_name' => 'string',
-            'message' => 'string',
+            'scheduled_datetime' => 'required|date_format:Y-m-d H:i',
         ]);
 
         // If validation fails, return validation errors
@@ -32,26 +34,45 @@ class MailController extends Controller
         // Retrieve input values from the request
         $to = $request->input('to');
         $toName = $request->input('to_name');
-        $from = 'datahan.marisol012@gmail.com';
-        $fromName = 'Marisol Datahan';
-        $subject = 'Student Forms Appointment';
-        $plainTextContent = $request->input('message', 'This is an email for Student Forms Appointment.'); 
-        $htmlContent = $request->input('message', '<strong>Student Forms Appointment System</strong>'); 
-        $message = $request->input('message', 'This is a test email.');
+        $scheduledDatetime = Carbon::createFromFormat('Y-m-d H:i', $request->input('scheduled_datetime'));
 
-        // Send the test email
-        $response = $this->mailService->sendEmail($to, $toName, $from, $fromName, $subject, $plainTextContent, $htmlContent, $message);
+        // Set the message for immediate email
+        $immediateMessage = 'Your request for appointment has been confirmed. We will notify you on the day of scheduled appointment. Thank you!';
 
-        // Check the response status and provide appropriate feedback
-        switch ($response) {
-            case 404:
-                return response()->json(['status' => 'Can\'t Find User', 'message' => 'The recipient email address was not found.'], 404);
-            case 202:
-                return response()->json(['status' => 'Email Sent Successfully', 'message' => 'The email has been sent successfully.'], 200);
-            case 400:
-                return response()->json(['status' => 'Can\'t Deliver Message', 'message' => 'There was an issue delivering the email.'], 400);
-            default:
-                return response()->json(['status' => 'Unknown Error', 'message' => 'An unknown error occurred.'], 500);
+        // Set the message for scheduled email
+        $scheduledMessage = 'Your appointment for Student Forms is today.';
+
+        // Check if the scheduled datetime is in the future
+        if ($scheduledDatetime->isFuture()) {
+            // Queue the email for sending at the scheduled datetime
+            ScheduledEmail::create([
+                'to' => $to,
+                'to_name' => $toName,
+                'scheduled_datetime' => $scheduledDatetime,
+                'message' => $scheduledMessage,
+            ]);
+
+            return response()->json(['status' => 'Email Scheduled', 'message' => 'The email has been scheduled for delivery.'], 200);
+        } else {
+            // Send the email immediately
+            $this->mailService->sendEmail($to, $toName, 'sia.sfas2024@gmail.com', 'Studen Forms Appointment', 'Student Forms Appointment System', $immediateMessage, 'Your request for appointment has been confirmed. We will notify you on the day of scheduled appointment. Thank you!');
+            
+            return response()->json(['status' => 'Email Sent', 'message' => 'The email has been sent.'], 200);
+        }
+    }
+
+    // This method should be called periodically by a scheduler or background job processing system
+    public function processScheduledEmails()
+    {
+        // Get all scheduled emails where the scheduled datetime is in the past
+        $scheduledEmails = ScheduledEmail::where('scheduled_datetime', '<=', Carbon::now())->get();
+
+        foreach ($scheduledEmails as $email) {
+            // Send the email
+            $this->mailService->sendEmail($email->to, $email->to_name, 'datahan.marisol012@gmail.com', 'Student Forms Appointment', 'Student Forms Appointment System', $email->message, $email->message);
+
+            // Delete the scheduled email from the database
+            $email->delete();
         }
     }
 }

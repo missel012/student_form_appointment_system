@@ -79,26 +79,28 @@ class GoogleCalendarController extends Controller
         // Create the event in Google Calendar
         $event = $this->googleService->createEvent($accessToken, $calendarId, $eventData);
 
-        
-    // Save event details in the database
-    if (!empty($event['id'])) {
-        // Parse the datetime value using Carbon
-        $appointmentDatetime = Carbon::parse($dateAndTime)->toDateTimeString();
+        // Save event details in the database
+        if (!empty($event['id'])) {
+            // Parse the datetime value using Carbon
+            $appointmentDatetime = Carbon::parse($dateAndTime)->toDateTimeString();
 
-        // Create a new event record in the events table
-        $newEvent = new Event();
-        $newEvent->google_calendar_event_id = $event['id'];
-        $newEvent->email = $calendarId; // Store the email as the calendar ID
-        $newEvent->appointment_for = $appointmentFor;
-        $newEvent->appointment_datetime = $appointmentDatetime; // Use the formatted datetime value
-        $newEvent->save();
-    }
+            // Create a new event record in the events table
+            $newEvent = new Event();
+            $newEvent->google_calendar_event_id = $event['id'];
+            $newEvent->email = $calendarId; // Store the email as the calendar ID
+            $newEvent->appointment_for = $appointmentFor;
+            $newEvent->appointment_datetime = $appointmentDatetime; // Use the formatted datetime value
+            $newEvent->save();
 
+            // Return the response with ID included
+            return response()->json(['event' => $event, 'id' => $newEvent->id]);
+        }
 
         // Return the response, including the event data if necessary
         return response()->json($event);
     }
-        public function viewEvent($id)
+
+    public function viewEvent($id)
     {
         $event = Event::find($id);
 
@@ -133,7 +135,8 @@ class GoogleCalendarController extends Controller
 
         $event->update($eventData);
 
-        return response()->json($event);
+        // Return the response with ID included
+        return response()->json(['event' => $event, 'id' => $event->id]);
     }
     
     public function deleteEvent($id)

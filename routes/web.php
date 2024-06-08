@@ -4,6 +4,7 @@
 
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\GoogleCalendarController;
+use App\Http\Controllers\DocumentTypeController;
 
 $router->get('/', function () use ($router) {
     return $router->app->version();
@@ -15,7 +16,7 @@ $router->get('/test', function () {
 
 Route::group([
 
-    'prefix' => 'api'
+    'prefix' => 'user'
 
 ], function ($router) {
     Route::post('register', 'AuthController@register');
@@ -27,6 +28,12 @@ Route::group([
 });
 
 $router->group(['middleware' => 'auth'], function ($router) {
+
+   
+    //Retrieve Documents
+    $router->get('/document-types', 'DocumentTypeController@index');
+    $router->get('/document-types/{id}', 'DocumentTypeController@show');
+
     // Form Request routes
     $router->get('/form-requests', ['as' => 'form-requests.index', 'uses' => 'FormRequestController@index']);
     $router->post('/form-requests', ['as' => 'form-requests.store', 'uses' => 'FormRequestController@store']);
@@ -36,23 +43,21 @@ $router->group(['middleware' => 'auth'], function ($router) {
     $router->delete('/form-requests/{id}', ['as' => 'form-requests.destroy', 'uses' => 'FormRequestController@destroy']);
 
     // Booking routes
-    $router->get('/auth', 'GoogleCalendarController@redirectToGoogle');
-    $router->post('/oauth2callback', 'GoogleCalendarController@handleOAuthCallback');
     $router->get('/events/{id}', ['uses' => 'GoogleCalendarController@viewEvent']);
     $router->post('/events', ['uses' => 'GoogleCalendarController@createEvent']);
     $router->put('/events/{id}', ['uses' => 'GoogleCalendarController@updateEvent']);
     $router->patch('/events/{id}', ['uses' => 'GoogleCalendarController@updateEvent']);
     $router->delete('/events/{id}', ['uses' => 'GoogleCalendarController@deleteEvent']);
 
-    // Payment routes
-    $router->post('/payments', 'PaymentController@create');
-    $router->get('/payments/{paymentId}', 'PaymentController@retrieve');
-    $router->put('/payments/{paymentId}', 'PaymentController@update');
-    $router->delete('/payments/{paymentId}', 'PaymentController@delete');
-
-    // Routes for testing Paymongo API
-    $router->post('/paymongo/payment-intent', 'PaymentController@createPaymentIntent');
+    // Payment route
+    $router->post('/create-payment', 'PaymentLinkController@createLink');
+    $router->get('/payments/{id}', 'PaymentLinkController@viewPayment');
 
     // Sendgrid route
     $router->post('/send-email', 'MailController@sendTestEmail');
 });
+
+//google auth
+$router->get('/auth', 'GoogleCalendarController@redirectToGoogle');
+$router->post('/oauth2callback', 'GoogleCalendarController@handleOAuthCallback');
+
