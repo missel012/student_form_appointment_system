@@ -1,85 +1,70 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\FormsRequest;
-use Illuminate\Support\Facades\Validator;
+use App\Services\FormRequestService;
 
 class FormRequestController extends Controller
 {
-    // Fetch all form requests
+    protected $formRequestService;
+
+    public function __construct(FormRequestService $formRequestService)
+    {
+        $this->formRequestService = $formRequestService;
+    }
+
     public function index()
     {
-        $formRequests = FormsRequest::all();
+        $formRequests = $this->formRequestService->getAllFormRequests();
         return response()->json($formRequests);
     }
 
-    // Store a new form request
     public function store(Request $request)
     {
-        // Validate the request data
-        $validator = Validator::make($request->all(), [
-            'first_name' => 'required|string',
-            'last_name' => 'required|string',
-            'student_id' => 'required|string',
-            'document_type_id' => 'required|exists:document_types,id',
-        ]);
+        $result = $this->formRequestService->createFormRequest($request->all());
 
-        // If validation fails, return validation errors
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
+        if (isset($result['errors'])) {
+            return response()->json(['errors' => $result['errors']], $result['status']);
         }
 
-        // Create and save a new form request
-        $formRequest = FormsRequest::create($request->all());
-        return response()->json($formRequest, 201);
+        return response()->json($result['formRequest'], $result['status']);
     }
 
-    // Show a specific form request
     public function show($id)
     {
-        $formRequest = FormsRequest::find($id);
+        $formRequest = $this->formRequestService->getFormRequestById($id);
+
         if (!$formRequest) {
             return response()->json(['error' => 'Form Request not found'], 404);
         }
+
         return response()->json($formRequest);
     }
 
-    // Update an existing form request
     public function update(Request $request, $id)
     {
-        // Validate the request data
-        $validator = Validator::make($request->all(), [
-            'first_name' => 'sometimes|required|string',
-            'last_name' => 'sometimes|required|string',
-            'student_id' => 'sometimes|required|string',
-            'document_type_id' => 'sometimes|required|exists:document_types,id',
-            'status' => 'sometimes|required|string|in:pending,approved,rejected',
-        ]);
+        $result = $this->formRequestService->updateFormRequest($id, $request->all());
 
-        // If validation fails, return validation errors
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
+        if (isset($result['errors'])) {
+            return response()->json(['errors' => $result['errors']], $result['status']);
         }
 
-        // Find the form request by ID and update it
-        $formRequest = FormsRequest::find($id);
-        if (!$formRequest) {
-            return response()->json(['error' => 'Form Request not found'], 404);
+        if (isset($result['error'])) {
+            return response()->json(['error' => $result['error']], $result['status']);
         }
 
-        $formRequest->update($request->all());
-        return response()->json($formRequest, 200);
+        return response()->json($result['formRequest'], $result['status']);
     }
 
-    // Delete a form request
     public function destroy($id)
     {
-        $formRequest = FormsRequest::find($id);
-        if (!$formRequest) {
-            return response()->json(['error' => 'Form Request not found'], 404);
+        $result = $this->formRequestService->deleteFormRequest($id);
+
+        if (isset($result['error'])) {
+            return response()->json(['error' => $result['error']], $result['status']);
         }
-        $formRequest->delete();
-        return response()->json(null, 204);
+
+        return response()->json(null, $result['status']);
     }
 }

@@ -64,7 +64,17 @@ $app->singleton(App\Services\MailService::class, function ($app) {
     return new App\Services\MailService(new SendGrid(env('SENDGRID_API_KEY')));
 });
 
+$app->singleton('App\Services\DocumentTypeService', function ($app) {
+    return new \App\Services\DocumentTypeService();
+});
 
+$app->singleton('App\Services\FormRequestService', function ($app) {
+    return new \App\Services\FormRequestService();
+});
+
+$app->singleton(\App\Services\AuthService::class, function ($app) {
+    return new \App\Services\AuthService();
+});
 
 $app->middleware([
     StartSession::class,
