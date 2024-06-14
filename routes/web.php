@@ -52,7 +52,9 @@ $router->group(['middleware' => 'auth'], function ($router) {
     $router->delete('/events/{id}', ['uses' => 'GoogleCalendarController@deleteEvent']);
 
     // Payment route
-
+    $router->post('/payments/create', 'PaymentLinkController@createLink');
+    $router->get('/payments/{transactionId}', 'PaymentLinkController@viewPayment');
+        
 
     // Sendgrid route
     $router->post('/send-email', 'MailController@sendTestEmail');
@@ -61,7 +63,4 @@ $router->group(['middleware' => 'auth'], function ($router) {
 //google auth
 $router->get('/auth', 'GoogleCalendarController@redirectToGoogle');
 $router->post('/oauth2callback', 'GoogleCalendarController@handleOAuthCallback');
-
-$router->post('/payments/create', 'PaymentLinkController@createLink');
-$router->get('/payments/{transactionId}', 'PaymentLinkController@viewPayment');
 
