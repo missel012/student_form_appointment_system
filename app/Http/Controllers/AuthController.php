@@ -36,19 +36,24 @@ class AuthController extends Controller
 
     public function login(Request $request)
     {
+        // Validate the request input
         $this->validate($request, [
-            'email' => 'required|string',
-            'password' => 'required|string',
+            'email' => 'required|string|email',
+            'password' => 'required|string|min:8',
         ]);
-
+    
         $credentials = $request->only(['email', 'password']);
-
+    
+        // Attempt to authenticate the user
         if (! $token = $this->authService->login($credentials)) {
-            return response()->json(['message' => 'Unauthorized'], 401);
+            // Provide a more informative error message if authentication fails
+            return response()->json(['message' => 'Invalid credentials. Please check your email and password and try again.'], 401);
         }
-
+    
+        // Respond with the generated token if authentication is successful
         return $this->respondWithToken($token);
     }
+    
 
     public function logout()
     {
