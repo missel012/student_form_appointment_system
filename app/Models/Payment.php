@@ -7,6 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 class Payment extends Model
 {
     protected $fillable = [
-        'amount', 'payment_method', 'payer_name'
+        'email', 'amount', 'payment_mode', 'payer_name', 'transaction_id'
     ];
+
+    // Optionally, define timestamps if they are not auto-handled by Laravel
+    public $timestamps = false;
 }

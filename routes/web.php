@@ -5,6 +5,7 @@
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\GoogleCalendarController;
 use App\Http\Controllers\DocumentTypeController;
+use App\Http\Controllers\PaymentLinkController;
 
 $router->get('/', function () use ($router) {
     return $router->app->version();
@@ -51,8 +52,7 @@ $router->group(['middleware' => 'auth'], function ($router) {
     $router->delete('/events/{id}', ['uses' => 'GoogleCalendarController@deleteEvent']);
 
     // Payment route
-    $router->post('/create-payment', 'PaymentLinkController@createLink');
-    $router->get('/payments/{id}', 'PaymentLinkController@viewPayment');
+
 
     // Sendgrid route
     $router->post('/send-email', 'MailController@sendTestEmail');
@@ -61,4 +61,7 @@ $router->group(['middleware' => 'auth'], function ($router) {
 //google auth
 $router->get('/auth', 'GoogleCalendarController@redirectToGoogle');
 $router->post('/oauth2callback', 'GoogleCalendarController@handleOAuthCallback');
+
+$router->post('/payments/create', 'PaymentLinkController@createLink');
+$router->get('/payments/{transactionId}', 'PaymentLinkController@viewPayment');
 
