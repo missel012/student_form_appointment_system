@@ -4,9 +4,9 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
-use App\Models\ScheduledEmail;
 use App\Services\MailService;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 
 class MailController extends Controller
 {
@@ -17,13 +17,12 @@ class MailController extends Controller
         $this->mailService = $mailService;
     }
 
-    public function sendTestEmail(Request $request)
+    public function sendEmail(Request $request)
     {
         // Validate the request data
         $validator = Validator::make($request->all(), [
-            'to' => 'required|email',
-            'to_name' => 'string',
-            'scheduled_datetime' => 'required|date_format:Y-m-d H:i',
+            'to_email' => 'required|email',
+            'to_name' => 'nullable|string',
         ]);
 
         // If validation fails, return validation errors
@@ -32,47 +31,24 @@ class MailController extends Controller
         }
 
         // Retrieve input values from the request
-        $to = $request->input('to');
-        $toName = $request->input('to_name');
-        $scheduledDatetime = Carbon::createFromFormat('Y-m-d H:i', $request->input('scheduled_datetime'));
+        $to = $request->input('to_email'); // Corrected to match validator rule
+        $toName = $request->input('to_name') ?? ''; // Default to empty string if to_name is null
 
-        // Set the message for immediate email
-        $immediateMessage = 'Your request for appointment has been confirmed. We will notify you on the day of scheduled appointment. Thank you!';
+        // Format the confirmation message
+        $confirmationMessage = "Hi $toName, your request for appointment has been confirmed. Thank you for choosing Student Forms Appointment System!";
 
-        // Set the message for scheduled email
-        $scheduledMessage = 'Your appointment for Student Forms is today.';
+        // Send the immediate email
+        $this->mailService->sendEmail(
+            $to,
+            $toName,
+            'sia.sfas2024@gmail.com',
+            'Student Forms Appointment System',
+            'Confirmation Email',
+            $confirmationMessage,
+            $confirmationMessage
+        );
 
-        // Check if the scheduled datetime is in the future
-        if ($scheduledDatetime->isFuture()) {
-            // Queue the email for sending at the scheduled datetime
-            ScheduledEmail::create([
-                'to' => $to,
-                'to_name' => $toName,
-                'scheduled_datetime' => $scheduledDatetime,
-                'message' => $scheduledMessage,
-            ]);
-
-            return response()->json(['status' => 'Email Scheduled', 'message' => 'The email has been scheduled for delivery.'], 200);
-        } else {
-            // Send the email immediately
-            $this->mailService->sendEmail($to, $toName, 'sia.sfas2024@gmail.com', 'Studen Forms Appointment', 'Student Forms Appointment System', $immediateMessage, 'Your request for appointment has been confirmed. We will notify you on the day of scheduled appointment. Thank you!');
-            
-            return response()->json(['status' => 'Email Sent', 'message' => 'The email has been sent.'], 200);
-        }
-    }
-
-    // This method should be called periodically by a scheduler or background job processing system
-    public function processScheduledEmails()
-    {
-        // Get all scheduled emails where the scheduled datetime is in the past
-        $scheduledEmails = ScheduledEmail::where('scheduled_datetime', '<=', Carbon::now())->get();
-
-        foreach ($scheduledEmails as $email) {
-            // Send the email
-            $this->mailService->sendEmail($email->to, $email->to_name, 'datahan.marisol012@gmail.com', 'Student Forms Appointment', 'Student Forms Appointment System', $email->message, $email->message);
-
-            // Delete the scheduled email from the database
-            $email->delete();
-        }
+        // Return response indicating email sent
+        return response()->json(['status' => 'Email Sent', 'message' => 'The confirmation email has been sent.'], 200);
     }
 }

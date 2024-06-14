@@ -28,7 +28,8 @@ class MailService
             $response = $this->sendGrid->send($email);
             return $response->statusCode();
         } catch (Exception $e) {
-            return 'Caught exception: '. $e->getMessage();
+            return 'Caught exception: ' . $e->getMessage();
         }
     }
+
 }

@@ -147,6 +147,8 @@ $app->register(App\Providers\SendGridServiceProvider::class);
 |
 */
 
+date_default_timezone_set('UTC'); // or your preferred timezone
+
 class_alias(Collective\Html\FormFacade::class, 'Form');
 class_alias(Collective\Html\HtmlFacade::class, 'Html');
 

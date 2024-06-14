@@ -57,7 +57,8 @@ $router->group(['middleware' => 'auth'], function ($router) {
         
 
     // Sendgrid route
-    $router->post('/send-email', 'MailController@sendTestEmail');
+    $router->post('/email-send', 'MailController@sendEmail');
+
 });
 
 //google auth
