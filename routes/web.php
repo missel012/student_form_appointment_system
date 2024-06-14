@@ -8,7 +8,7 @@ use App\Http\Controllers\DocumentTypeController;
 use App\Http\Controllers\PaymentLinkController;
 
 $router->get('/', function () use ($router) {
-    return $router->app->version();
+    return "Welcome to Student Forms Appointment System";
 });
 
 $router->get('/test', function () {
