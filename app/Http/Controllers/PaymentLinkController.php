@@ -23,7 +23,7 @@ class PaymentLinkController extends Controller
         // Validate request inputs
         $validator = Validator::make($request->all(), [
             'email' => 'required|email',
-            'amount' => 'required|numeric|min:100',
+            'amount' => 'required|numeric|min:50', // Keep the minimum amount to PHP 50.00
             'payment_mode' => 'required|in:Online,Onsite',
             'payer_name' => 'required|string',
         ]);
@@ -42,6 +42,9 @@ class PaymentLinkController extends Controller
         // Convert amount to centavos
         $amountInCents = (float)$amount * 100;
 
+        // Adjust amount to meet payment gateway minimum requirement
+        $adjustedAmountInCents = max($amountInCents, 10000); // Ensure at least PHP 100.00
+
         try {
             // Generate transaction ID
             $transactionId = 'txn_' . Str::random(12); // Generates a random alphanumeric string of length 12
@@ -49,7 +52,7 @@ class PaymentLinkController extends Controller
             // Save payment information to the database
             $payment = Payment::create([
                 'email' => $email,
-                'amount' => $amountInCents,
+                'amount' => $amountInCents, // Save original amount
                 'payment_mode' => $paymentMode,
                 'payer_name' => $payerName,
                 'transaction_id' => $transactionId,
@@ -65,10 +68,9 @@ class PaymentLinkController extends Controller
 
             // Set the message based on payment mode
             if ($paymentMode === 'Online') {
-                $link = $this->paymentLinkService->generatePaymentLink($amountInCents, $paymentMode, $transactionId);
+                $link = $this->paymentLinkService->generatePaymentLink($adjustedAmountInCents, $paymentMode, $transactionId);
                 $response["message"] = "Successfully created payment. Please proceed to checkout";
-                $response["checkout_here"] = $link;
-               
+                $response["checkout_here"] = $link;    
             } else {
                 $response["message"] = "Please pay at the counter";
             }
