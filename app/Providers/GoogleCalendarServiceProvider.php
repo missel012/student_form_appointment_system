@@ -14,8 +14,11 @@ class GoogleCalendarServiceProvider extends ServiceProvider
             $client = new Google_Client();
             $client->setClientId(env('GOOGLE_CLIENT_ID'));
             $client->setClientSecret(env('GOOGLE_CLIENT_SECRET'));
-            $client->setRedirectUri(env('GOOGLE_REDIRECT_URI'));
+            $client->setRedirectUri(env('APP_URL') . '/oauth2callback'); // Adjust as per your environment configuration
             $client->addScope(Google_Service_Calendar::CALENDAR);
+            // Optionally set access type and prompt
+            $client->setAccessType('offline'); // Allows for refresh tokens
+            $client->setApprovalPrompt('force'); // Forces to show consent screen every time
 
             return $client;
         });
