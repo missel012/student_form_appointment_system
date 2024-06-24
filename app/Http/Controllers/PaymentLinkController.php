@@ -2,102 +2,53 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\PaymentLinkService;
-use App\Models\Payment;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator; // Import Validator facade for data validation
+use App\Services\MailService; // Import MailService for sending emails
+use Carbon\Carbon; // Import Carbon for date manipulation
+use Illuminate\Support\Facades\Log; // Import Log facade for logging
 
-class PaymentLinkController extends Controller
+class MailController extends Controller
 {
-    protected $paymentLinkService;
+    protected $mailService; // Protected property to hold MailService instance
 
-    public function __construct(PaymentLinkService $paymentLinkService)
+    public function __construct(MailService $mailService)
     {
-        $this->paymentLinkService = $paymentLinkService;
+        $this->mailService = $mailService; // Inject MailService instance via constructor
     }
 
-    public function createLink(Request $request)
+    public function sendEmail(Request $request)
     {
-        // Validate request inputs
+        // Validate the request data
         $validator = Validator::make($request->all(), [
-            'email' => 'required|email',
-            'amount' => 'required|numeric|min:50', // Keep the minimum amount to PHP 50.00
-            'payment_mode' => 'required|in:Online,Onsite',
-            'payer_name' => 'required|string',
+            'to_email' => 'required|email', // Validate 'to_email' field as required and must be an email
+            'to_name' => 'nullable|string', // 'to_name' field is optional and must be a string if provided
         ]);
 
-        // Check validation errors
+        // If validation fails, return validation errors
         if ($validator->fails()) {
-            return response()->json(['error' => $validator->errors()], 400);
+            return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        // Extract validated data from the request
-        $email = $request->input('email');
-        $amount = $request->input('amount');
-        $paymentMode = $request->input('payment_mode');
-        $payerName = $request->input('payer_name');
+        // Retrieve input values from the request
+        $to = $request->input('to_email'); // Get 'to_email' value from request
+        $toName = $request->input('to_name') ?? ''; // Get 'to_name' value or default to empty string if null
 
-        // Convert amount to centavos
-        $amountInCents = (float)$amount * 100;
+        // Format the confirmation message
+        $confirmationMessage = "Hi $toName, your request for appointment has been confirmed. Thank you for choosing Student Forms Appointment System!";
 
-        // Adjust amount to meet payment gateway minimum requirement
-        $adjustedAmountInCents = max($amountInCents, 10000); // Ensure at least PHP 100.00
+        // Send the immediate email using MailService
+        $this->mailService->sendEmail(
+            $to, // Recipient email address
+            $toName, // Recipient name (if provided)
+            'sia.sfas2024@gmail.com', // Sender email address
+            'Student Forms Appointment System', // Sender name
+            'Confirmation Email', // Email subject
+            $confirmationMessage, // Email body
+            $confirmationMessage // Alternative email body (not used in this case)
+        );
 
-        try {
-            // Generate transaction ID
-            $transactionId = 'txn_' . Str::random(12); // Generates a random alphanumeric string of length 12
-
-            // Save payment information to the database
-            $payment = Payment::create([
-                'email' => $email,
-                'amount' => $amountInCents, // Save original amount
-                'payment_mode' => $paymentMode,
-                'payer_name' => $payerName,
-                'transaction_id' => $transactionId,
-            ]);
-
-            $response = [
-                'transaction_id' => $transactionId,
-                "payer_name" => $payerName,
-                "email" => $email,
-                "amount" => $amount,
-                "payment_mode" => $paymentMode,
-            ];
-
-            // Set the message based on payment mode
-            if ($paymentMode === 'Online') {
-                $link = $this->paymentLinkService->generatePaymentLink($adjustedAmountInCents, $paymentMode, $transactionId);
-                $response["message"] = "Successfully created payment. Please proceed to checkout";
-                $response["checkout_here"] = $link;    
-            } else {
-                $response["message"] = "Please pay at the counter";
-            }
-
-            // Return the response
-            return response()->json($response, 200);
-        } catch (\Exception $e) {
-            Log::error('Failed to generate payment link', ['error' => $e->getMessage()]);
-            return response()->json(["error" => "Failed to generate payment link: " . $e->getMessage()], 500);
-        }
-    }
-
-    public function viewPayment($transactionId)
-    {
-        try {
-            // Retrieve the payment from the database based on transaction_id
-            $payment = Payment::where('transaction_id', $transactionId)->first();
-
-            if (!$payment) {
-                return response()->json(["error" => "Payment not found"], 404);
-            }
-
-            // Return the payment details
-            return response()->json(["payment" => $payment], 200);
-        } catch (\Exception $e) {
-            Log::error('Failed to retrieve payment', ['error' => $e->getMessage()]);
-            return response()->json(["error" => "Failed to retrieve payment: " . $e->getMessage()], 500);
-        }
+        // Return response indicating email sent successfully
+        return response()->json(['status' => 'Email Sent', 'message' => 'The confirmation email has been sent.'], 200);
     }
 }

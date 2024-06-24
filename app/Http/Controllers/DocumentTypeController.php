@@ -1,20 +1,20 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers; // Declare the namespace for the Controllers
 
-use Illuminate\Http\Request;
-use App\Services\DocumentTypeService;
+use Illuminate\Http\Request; // Import the Request class from Illuminate\Http
+use App\Services\DocumentTypeService; // Import the DocumentTypeService class from App\Services
 
-class DocumentTypeController extends Controller
+class DocumentTypeController extends Controller // Define the DocumentTypeController class extending the base Controller class
 {
-    protected $documentTypeService;
+    protected $documentTypeService; // Declare a protected property for the DocumentTypeService
 
-    public function __construct(DocumentTypeService $documentTypeService)
+    public function __construct(DocumentTypeService $documentTypeService) // Constructor method to initialize the DocumentTypeService
     {
-        $this->documentTypeService = $documentTypeService;
+        $this->documentTypeService = $documentTypeService; // Assign the injected DocumentTypeService instance to the property
     }
 
-    public function index()
+    public function index() // Method to handle fetching all document types
     {
         // Fetch all document types using the service
         $documentTypes = $this->documentTypeService->getAllDocumentTypes();
@@ -23,7 +23,7 @@ class DocumentTypeController extends Controller
         return response()->json($documentTypes);
     }
 
-    public function show($id)
+    public function show($id) // Method to handle fetching a specific document type by ID
     {
         // Find the document type by its ID using the service
         $documentType = $this->documentTypeService->getDocumentTypeById($id);

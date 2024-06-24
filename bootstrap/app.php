@@ -1,15 +1,22 @@
 <?php
-
 use Illuminate\Session\SessionManager;
 use Illuminate\Session\Middleware\StartSession;
 
+// Import necessary classes. SessionManager is for managing sessions, StartSession is middleware to start sessions.
+
 require_once __DIR__.'/../vendor/autoload.php';
+
+// Include the Composer autoload file to load all dependencies.
 
 (new Laravel\Lumen\Bootstrap\LoadEnvironmentVariables(
     dirname(__DIR__)
 ))->bootstrap();
 
+// Load environment variables from the .env file.
+
 date_default_timezone_set(env('APP_TIMEZONE', 'UTC'));
+
+// Set the default timezone, either from the environment variable APP_TIMEZONE or default to UTC.
 
 /*
 |--------------------------------------------------------------------------
@@ -26,9 +33,15 @@ $app = new Laravel\Lumen\Application(
     dirname(__DIR__)
 );
 
- $app->withFacades();
+// Create a new Lumen application instance. This is the main IoC container and router for the application.
 
- $app->withEloquent();
+$app->withFacades();
+
+// Enable facades for the application.
+
+$app->withEloquent();
+
+// Enable Eloquent ORM for the application.
 
 /*
 |--------------------------------------------------------------------------
@@ -46,39 +59,56 @@ $app->singleton(
     App\Exceptions\Handler::class
 );
 
+// Register a singleton binding for the exception handler.
+
 $app->singleton(
     Illuminate\Contracts\Console\Kernel::class,
     App\Console\Kernel::class
 );
 
+// Register a singleton binding for the console kernel.
+
 $app->singleton('session', function ($app) {
     return $app->loadComponent('session', Illuminate\Session\SessionServiceProvider::class, SessionManager::class);
 });
+
+// Register a singleton binding for the session manager, loading the session component.
 
 $app->singleton('App\PaymongoAPI', function ($app) {
     return new App\PaymongoAPI(new GuzzleHttp\Client());
 });
 
+// Register a singleton binding for the PaymongoAPI, initializing it with a Guzzle HTTP client.
 
 $app->singleton(App\Services\MailService::class, function ($app) {
     return new App\Services\MailService(new SendGrid(env('SENDGRID_API_KEY')));
 });
 
+// Register a singleton binding for the MailService, initializing it with a SendGrid client using the API key from the environment.
+
 $app->singleton('App\Services\DocumentTypeService', function ($app) {
     return new \App\Services\DocumentTypeService();
 });
+
+// Register a singleton binding for the DocumentTypeService.
 
 $app->singleton('App\Services\FormRequestService', function ($app) {
     return new \App\Services\FormRequestService();
 });
 
+// Register a singleton binding for the FormRequestService.
+
 $app->singleton(\App\Services\AuthService::class, function ($app) {
     return new \App\Services\AuthService();
 });
 
+// Register a singleton binding for the AuthService.
+
 $app->middleware([
     StartSession::class,
 ]);
+
+// Register the StartSession middleware globally.
 
 /*
 |--------------------------------------------------------------------------
@@ -91,8 +121,8 @@ $app->middleware([
 |
 */
 $app->configure('app');
-//$app->configure('view');
 
+// Register the "app" configuration file.
 
 /*
 |--------------------------------------------------------------------------
@@ -108,10 +138,14 @@ $app->middleware([
     Illuminate\Session\Middleware\StartSession::class,
 ]);
 
+// Register the StartSession middleware globally again (duplicated, may be redundant).
+
 $app->routeMiddleware([
     'auth' => App\Http\Middleware\Authenticate::class,
     'client.credentials' => Tymon\JWTAuth\Providers\LumenServiceProvider::class,
 ]);
+
+// Register route-specific middleware for authentication and JWT client credentials.
 
 /*
 |--------------------------------------------------------------------------
@@ -125,16 +159,17 @@ $app->routeMiddleware([
 */
 
 $app->register(App\Providers\GoogleCalendarServiceProvider::class);
-
 $app->register(App\Providers\SendGridServiceProvider::class);
+$app->register(App\Providers\AppServiceProvider::class);
+$app->register(\Collective\Html\HtmlServiceProvider::class);
+$app->register(Tymon\JWTAuth\Providers\LumenServiceProvider::class);
 
- $app->register(App\Providers\AppServiceProvider::class);
- //$app->register(Illuminate\View\ViewServiceProvider::class);
- $app->register(\Collective\Html\HtmlServiceProvider::class);
- $app->register(Tymon\JWTAuth\Providers\LumenServiceProvider::class);
+// Register various service providers for Google Calendar, SendGrid, application services, HTML forms, and JWT authentication.
 
- //$app->register(App\Providers\AuthServiceProvider::class);
-// $app->register(App\Providers\EventServiceProvider::class);
+//$app->register(App\Providers\AuthServiceProvider::class);
+//$app->register(App\Providers\EventServiceProvider::class);
+
+// Uncomment to register AuthServiceProvider and EventServiceProvider if needed.
 
 /*
 |--------------------------------------------------------------------------
@@ -149,12 +184,17 @@ $app->register(App\Providers\SendGridServiceProvider::class);
 
 date_default_timezone_set('UTC'); // or your preferred timezone
 
+// Set the default timezone.
+
 class_alias(Collective\Html\FormFacade::class, 'Form');
 class_alias(Collective\Html\HtmlFacade::class, 'Html');
+
+// Create class aliases for the HTML and Form facades.
 
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
+// Set error reporting to display all errors.
 
 $app->router->group([
     'namespace' => 'App\Http\Controllers',
@@ -162,4 +202,8 @@ $app->router->group([
     require __DIR__.'/../routes/web.php';
 });
 
+// Load the application routes, grouping them under the App\Http\Controllers namespace.
+
 return $app;
+
+// Return the application instance.

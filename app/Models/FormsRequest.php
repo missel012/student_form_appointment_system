@@ -6,8 +6,17 @@ use Illuminate\Database\Eloquent\Model;
 
 class FormsRequest extends Model
 {
-    // Specify the attributes that are mass assignable
+    /**
+     * The attributes that are mass assignable.
+     *
+     * These attributes can be filled using mass assignment.
+     *
+     * @var array
+     */
     protected $fillable = [
-        'first_name', 'last_name', 'student_id', 'document_type_id'
+        'first_name', // First name of the requester (fillable attribute)
+        'last_name', // Last name of the requester (fillable attribute)
+        'student_id', // Student ID of the requester (fillable attribute)
+        'document_type_id' // ID of the document type requested (fillable attribute)
     ];
 }

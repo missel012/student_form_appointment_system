@@ -22,6 +22,7 @@ class Authenticate
      */
     public function __construct(Auth $auth)
     {
+        // Injecting the authentication guard factory instance.
         $this->auth = $auth;
     }
 
@@ -35,10 +36,13 @@ class Authenticate
      */
     public function handle($request, Closure $next, $guard = null)
     {
+        // Check if the user is authenticated for the given guard.
         if ($this->auth->guard($guard)->guest()) {
+            // If not authenticated, return a 401 Unauthorized response.
             return response('Unauthorized.', 401);
         }
 
+        // If authenticated, proceed to the next middleware or route handler.
         return $next($request);
     }
 }
